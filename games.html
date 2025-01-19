@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Truth Game Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: #f0f0f0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            position: relative;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background: #e0e0e0;
+        }
+
+        .player {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+
+        .player1 {
+            background: #FF6B6B;
+            z-index: 2;
+        }
+
+        .player2 {
+            background: #4ECDC4;
+            z-index: 1;
+        }
+
+        .controls {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .player-info {
+            padding: 15px;
+            border-radius: 8px;
+            background: #f5f6fa;
+            margin-bottom: 10px;
+        }
+
+        .current-player {
+            background: #dff9fb;
+        }
+
+        .dice {
+            font-size: 40px;
+            text-align: center;
+            padding: 20px;
+            background: #f5f6fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .dice:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #4ECDC4;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-board" id="board"></div>
+        <div class="controls">
+            <div id="player1" class="player-info current-player">
+                Player 1's Turn
+            </div>
+            <div id="player2" class="player-info">
+                Player 2's Turn
+            </div>
+            <div class="dice" id="dice" onclick="rollDice()">🎲</div>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="questionModal">
+        <div class="modal-content">
+            <h2>Question for Player <span id="currentPlayerNumber"></span></h2>
+            <p class="question-text" id="question"></p>
+            <button class="btn" onclick="closeQuestion()">I have answered</button>
+        </div>
+    </div>
+
+    <script>
+        const board = document.getElementById('board');
+        const questionModal = document.getElementById('questionModal');
+        let currentPlayer = 1;
+        let positions = { 1: 1, 2: 1 };
+        
+        // Array of personal questions
+        const questions = [
+    "Apa ketakutan terbesar kamu?",
+    "Apa hal paling memalukan yang pernah terjadi padamu di sekolah?",
+    "Apa pujian terbaik yang pernah kamu terima?",
+    "Apa penyesalan terbesar dalam hidupmu?",
+    "Apa tindakan paling baik yang pernah dilakukan seseorang untukmu?",
+    "Apa impian terbesar dalam hidupmu?",
+    "Apa pelajaran hidup paling berharga yang pernah kamu pelajari?",
+    "Apa kenangan masa kecil favoritmu?",
+    "Jika kamu bisa mengubah satu hal tentang dirimu, apa yang akan kamu ubah?",
+    "Apa hal paling berani yang pernah kamu lakukan?",
+    "Apa pencapaian yang paling kamu banggakan?",
+    "Apa nasihat terburuk yang pernah kamu terima?",
+    "Apa masalah terbesar yang pernah kamu hadapi?",
+    "Apa kebiasaan yang paling mengganggumu?",
+    "Apa hal paling berharga yang kamu miliki dan mengapa?",
+    "Apa kualitas favoritmu tentang dirimu?",
+    "Apa hal yang kamu harap lebih banyak orang ketahui tentang dirimu?",
+    "Apa keputusan tersulit yang pernah kamu buat?",
+    "Apa rasa tidak aman terbesar yang kamu miliki?",
+    "Apa nasihat terbaik yang pernah kamu terima?",
+    "Apa hal yang paling kamu takuti?",
+    "Apa hal paling lucu yang pernah kamu alami?",
+    "Apa hal paling berharga yang pernah kamu pelajari dari kegagalan?",
+    "Apa tempat yang paling ingin kamu kunjungi?",
+    "Apa yang paling kamu syukuri saat ini?",
+    "Siapa yang paling berpengaruh dalam hidupmu?",
+    "Apa hobi atau kegiatan favoritmu?",
+    "Apa yang membuatmu merasa paling hidup?",
+    "Apa film yang paling kamu sukai?",
+    "Apa yang paling membuatmu merasa bangga tentang keluargamu?",
+    "Apa hal paling gila yang pernah kamu lakukan demi cinta?",
+    "Apa yang akan kamu lakukan jika tidak perlu bekerja lagi?",
+    "Apa yang kamu anggap sebagai keberhasilan dalam hidup?",
+    "Apa yang paling kamu takuti dalam hubungan pribadi?",
+    "Apa tujuan hidup terbesar yang ingin kamu capai?",
+    "Apa kenangan paling menyentuh yang kamu miliki?",
+    "Apa impian yang belum tercapai sampai sekarang?",
+    "Apa yang paling kamu hargai dalam persahabatan?",
+    "Apa yang akan kamu lakukan jika tahu bahwa kamu tidak bisa gagal?",
+    "Apa pendapatmu tentang cinta sejati?",
+    "Apa yang kamu anggap sebagai kegagalan terbesar dalam hidup?",
+    "Apa pencapaian yang ingin kamu raih dalam 5 tahun ke depan?",
+    "Apa sifat yang paling kamu hargai dalam diri orang lain?",
+    "Apa kebiasaan buruk yang ingin kamu hilangkan?",
+    "Apa yang membuatmu merasa paling nyaman?",
+    "Apa hal terbaik yang pernah kamu lakukan untuk orang lain?",
+    "Apa yang kamu anggap sebagai kebahagiaan sejati?",
+    "Apa yang akan kamu lakukan jika mendapatkan satu hari tanpa batasan?",
+    "Apa yang kamu sukai tentang tempat tinggalmu?",
+    "Apa hal yang paling ingin kamu pelajari?",
+    "Apa yang paling kamu harapkan dari hidupmu?",
+    "Apa yang akan kamu lakukan jika kamu bisa kembali ke masa lalu?",
+    "Apa yang paling menantang tentang pekerjaanmu?",
+    "Apa yang paling kamu nikmati dalam rutinitas harianmu?",
+    "Apa yang kamu anggap sebagai kekuatan terbesar dirimu?",
+    "Apa yang paling kamu hargai tentang waktu?",
+    "Apa yang menurutmu penting dalam menjaga hubungan baik dengan orang lain?",
+    "Apa hal yang paling kamu sesali dalam hidup?",
+    "Apa yang akan kamu lakukan jika semua orang mendengarkanmu?",
+    "Apa yang kamu harap bisa kamu lakukan lebih banyak?",
+    "Apa hal yang paling kamu takuti tentang masa depan?",
+    "Apa yang ingin kamu capai dalam hidup sebelum menua?",
+    "Apa yang menurutmu merupakan definisi dari kesuksesan?",
+    "Apa hal yang paling berharga yang kamu pelajari dari orang tua?",
+    "Apa yang paling penting dalam menjaga kebahagiaan?",
+    "Apa yang paling sulit untuk kamu lakukan?",
+    "Apa hal yang ingin kamu ubah tentang dunia ini?",
+    "Apa yang paling membuatmu terinspirasi?",
+    "Apa yang kamu sukai tentang dirimu?",
+    "Apa yang paling kamu nikmati saat liburan?",
+    "Apa hal yang menurutmu paling penting dalam hidup?",
+    "Apa yang akan kamu lakukan jika kamu punya kesempatan untuk memulai semuanya dari awal?",
+    "Apa yang membuatmu merasa diterima?",
+    "Apa yang paling kamu inginkan di masa depan?",
+    "Apa yang menurutmu bisa membuat dunia ini menjadi tempat yang lebih baik?",
+    "Apa yang akan kamu lakukan jika kamu bisa berbicara dengan versi masa depan dirimu?",
+    "Apa yang paling penting dalam membangun kepercayaan?",
+    "Apa yang kamu anggap sebagai tantangan terbesar dalam hidup?",
+    "Apa yang akan kamu lakukan jika semua orang menghargai pendapatmu?",
+    "Apa yang menurutmu adalah kualitas terbaik dalam diri seseorang?",
+    "Apa yang paling kamu hargai dalam hidup ini?",
+    "Apa yang paling membuatmu bangga tentang dirimu?",
+    "Apa yang akan kamu lakukan jika kamu bisa mengubah satu keputusan dalam hidupmu?",
+    "Apa yang menurutmu membuatmu berbeda dari orang lain?",
+    "Apa yang paling kamu sesali tidak pernah kamu coba?",
+    "Apa yang paling kamu ingin lakukan jika kamu tidak takut gagal?",
+    "Apa yang menurutmu menjadi faktor penentu kesuksesan?",
+    "Apa hal yang paling ingin kamu ubah di dunia ini?",
+    "Apa yang akan kamu lakukan jika bisa menjalani kehidupan yang berbeda?",
+    "Apa yang menurutmu bisa membuat hubungan lebih kuat?",
+    "Apa yang akan kamu lakukan jika tidak ada batasan dalam hidupmu?",
+    "Apa hal yang paling membuatmu bersemangat setiap hari?",
+    "Apa yang paling kamu inginkan dalam hidup?",
+    "Apa yang paling kamu hargai tentang teman-temanmu?",
+    "Apa yang menurutmu bisa membuat seseorang sukses?",
+    "Apa yang menurutmu penting dalam menjalani kehidupan yang bermakna?",
+    "Apa yang menurutmu bisa meningkatkan kualitas hidupmu?",
+    "Apa yang menurutmu membuat seseorang berharga?",
+    "Apa yang paling membuatmu merasa dihargai?",
+    "Apa yang paling kamu harapkan dari dirimu sendiri?",
+    "Apa yang paling kamu khawatirkan tentang dunia ini?",
+    "Apa yang ingin kamu capai dalam hidup selain kesuksesan materi?",
+    "Apa yang paling membuatmu bahagia?",
+    "Apa yang menurutmu bisa membuat hidupmu lebih bermakna?"
+];
+
+        // Create board
+        for (let i = 100; i >= 1; i--) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.textContent = i;
+            board.appendChild(cell);
+        }
+
+        // Create players
+        const player1 = document.createElement('div');
+        player1.className = 'player player1';
+        const player2 = document.createElement('div');
+        player2.className = 'player player2';
+        updatePlayerPositions();
+
+        function updatePlayerPositions() {
+            const cells = document.querySelectorAll('.cell');
+            cells[100 - positions[1]].appendChild(player1);
+            cells[100 - positions[2]].appendChild(player2);
+        }
+
+        function rollDice() {
+            const dice = document.getElementById('dice');
+            dice.classList.add('shake');
+            
+            setTimeout(() => {
+                const roll = Math.floor(Math.random() * 6) + 1;
+                dice.textContent = `🎲 ${roll}`;
+                movePlayer(roll);
+                dice.classList.remove('shake');
+            }, 500);
+        }
+
+        function movePlayer(spaces) {
+            const newPosition = Math.min(positions[currentPlayer] + spaces, 100);
+            positions[currentPlayer] = newPosition;
+            updatePlayerPositions();
+            
+            // Show question for the current position
+            showQuestion(newPosition);
+        }
+
+        function showQuestion(position) {
+            // Get a random question (or you could map specific questions to positions)
+            const questionIndex = (position - 1) % questions.length;
+            const question = questions[questionIndex];
+            
+            document.getElementById('currentPlayerNumber').textContent = currentPlayer;
+            document.getElementById('question').textContent = question;
+            questionModal.style.display = 'flex';
+        }
+
+        function closeQuestion() {
+            questionModal.style.display = 'none';
+            
+            // Switch players
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            document.getElementById('player1').classList.toggle('current-player');
+            document.getElementById('player2').classList.toggle('current-player');
+            
+            // Check for winner
+            if (positions[currentPlayer === 1 ? 2 : 1] === 100) {
+                showMessage(`Game Over! 🎉`);
+                setTimeout(() => {
+                    if(confirm('Play again?')) {
+                        location.reload();
+                    }
+                }, 1000);
+            }
+        }
+
+        function showMessage(msg) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = msg;
+            setTimeout(() => messageDiv.textContent = '', 3000);
+        }
+    </script>
+</body>
+</html>
