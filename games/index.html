@@ -1,400 +1,234 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Truth Game Board</title>
+  <head>
+    <title>100 Pertanyaan</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+      body {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        padding: 20px;
+        background: #f0f0f0;
+        font-family: Arial, sans-serif;
+      }
 
-        body {
-            display: flex;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
-            padding: 20px;
-        }
+      .box {
+        width: 80px;
+        height: 80px;
+        background: #2563eb;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 20px;
-            width: 100%;
-        }
+      .box.opened {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
 
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 2px;
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            aspect-ratio: 1;
-        }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
 
-        .cell {
-            aspect-ratio: 1;
-            background: #f0f0f0;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            position: relative;
-            transition: background-color 0.3s;
-            cursor: pointer;
-        }
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 80%;
+        position: relative;
+      }
 
-        .cell:hover {
-            background: #e0e0e0;
-        }
+      .close {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+        font-size: 24px;
+      }
 
-        .player {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            position: absolute;
-            transition: all 0.5s ease;
+      @media (max-width: 600px) {
+        .box {
+          width: 60px;
+          height: 60px;
+          font-size: 14px;
         }
-
-        .player1 {
-            background: #FF6B6B;
-            z-index: 2;
-        }
-
-        .player2 {
-            background: #4ECDC4;
-            z-index: 1;
-        }
-
-        .controls {
-            flex: 1;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .player-info {
-            padding: 15px;
-            border-radius: 8px;
-            background: #f5f6fa;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .player-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-        }
-
-        .player1-color {
-            background: #FF6B6B;
-        }
-
-        .player2-color {
-            background: #4ECDC4;
-        }
-
-        .current-player {
-            background: #dff9fb;
-        }
-
-        .dice {
-            font-size: 40px;
-            text-align: center;
-            padding: 20px;
-            background: #f5f6fa;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .dice:hover {
-            transform: scale(1.05);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-        }
-
-        .question-text {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background: #4ECDC4;
-            color: white;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin: 10px;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-        }
-
-        @keyframes shake {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            50% { transform: rotate(10deg); }
-            75% { transform: rotate(-10deg); }
-            100% { transform: rotate(0deg); }
-        }
-
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="game-board" id="board"></div>
-        <div class="controls">
-            <div id="player1" class="player-info current-player">
-                <div class="player-color player1-color"></div>
-                Player 1's Turn
-            </div>
-            <div id="player2" class="player-info">
-                <div class="player-color player2-color"></div>
-                Player 2's Turn
-            </div>
-            <div class="dice" id="dice" onclick="rollDice()">🎲</div>
-            <div id="message"></div>
-        </div>
-    </div>
-
-    <div class="modal" id="questionModal">
-        <div class="modal-content">
-            <h2>Question for Player <span id="currentPlayerNumber"></span></h2>
-            <p class="question-text" id="question"></p>
-            <button class="btn" onclick="closeQuestion()">I have answered</button>
-        </div>
+  </head>
+  <body>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="question"></p>
+      </div>
     </div>
 
     <script>
-        const board = document.getElementById('board');
-        const questionModal = document.getElementById('questionModal');
-        let currentPlayer = 1;
-        let positions = { 1: 1, 2: 1 };
-        
-        // Array of personal questions
-        const questions = [
-            "Apa ketakutan terbesar kamu?",
-            "Apa hal paling memalukan yang pernah terjadi padamu di sekolah?",
-            "Apa pujian terbaik yang pernah kamu terima?",
-            "Apa penyesalan terbesar dalam hidupmu?",
-            "Apa tindakan paling baik yang pernah dilakukan seseorang untukmu?",
-            "Apa impian terbesar dalam hidupmu?",
-            "Apa pelajaran hidup paling berharga yang pernah kamu pelajari?",
-            "Apa kenangan masa kecil favoritmu?",
-            "Jika kamu bisa mengubah satu hal tentang dirimu, apa yang akan kamu ubah?",
-            "Apa hal paling berani yang pernah kamu lakukan?",
-            "Apa pencapaian yang paling kamu banggakan?",
-            "Apa nasihat terburuk yang pernah kamu terima?",
-            "Apa masalah terbesar yang pernah kamu hadapi?",
-            "Apa kebiasaan yang paling mengganggumu?",
-            "Apa hal paling berharga yang kamu miliki dan mengapa?",
-            "Apa kualitas favoritmu tentang dirimu?",
-            "Apa hal yang kamu harap lebih banyak orang ketahui tentang dirimu?",
-            "Apa keputusan tersulit yang pernah kamu buat?",
-            "Apa rasa tidak aman terbesar yang kamu miliki?",
-            "Apa nasihat terbaik yang pernah kamu terima?",
-            "Apa hal yang paling kamu takuti?",
-            "Apa hal paling lucu yang pernah kamu alami?",
-            "Apa hal paling berharga yang pernah kamu pelajari dari kegagalan?",
-            "Apa tempat yang paling ingin kamu kunjungi?",
-            "Apa yang paling kamu syukuri saat ini?",
-            "Siapa yang paling berpengaruh dalam hidupmu?",
-            "Apa hobi atau kegiatan favoritmu?",
-            "Apa yang membuatmu merasa paling hidup?",
-            "Apa film yang paling kamu sukai?",
-            "Apa yang paling membuatmu merasa bangga tentang keluargamu?",
-            "Apa hal paling gila yang pernah kamu lakukan demi cinta?",
-            "Apa yang akan kamu lakukan jika tidak perlu bekerja lagi?",
-            "Apa yang kamu anggap sebagai keberhasilan dalam hidup?",
-            "Apa yang paling kamu takuti dalam hubungan pribadi?",
-            "Apa tujuan hidup terbesar yang ingin kamu capai?",
-            "Apa kenangan paling menyentuh yang kamu miliki?",
-            "Apa impian yang belum tercapai sampai sekarang?",
-            "Apa yang paling kamu hargai dalam persahabatan?",
-            "Apa yang akan kamu lakukan jika tahu bahwa kamu tidak bisa gagal?",
-            "Apa pendapatmu tentang cinta sejati?",
-            "Apa yang kamu anggap sebagai kegagalan terbesar dalam hidup?",
-            "Apa pencapaian yang ingin kamu raih dalam 5 tahun ke depan?",
-            "Apa sifat yang paling kamu hargai dalam diri orang lain?",
-            "Apa kebiasaan buruk yang ingin kamu hilangkan?",
-            "Apa yang membuatmu merasa paling nyaman?",
-            "Apa hal terbaik yang pernah kamu lakukan untuk orang lain?",
-            "Apa yang kamu anggap sebagai kebahagiaan sejati?",
-            "Apa yang akan kamu lakukan jika mendapatkan satu hari tanpa batasan?",
-            "Apa yang kamu sukai tentang tempat tinggalmu?",
-            "Apa hal yang paling ingin kamu pelajari?",
-            "Apa yang paling kamu harapkan dari hidupmu?",
-            "Apa yang akan kamu lakukan jika kamu bisa kembali ke masa lalu?",
-            "Apa yang paling menantang tentang pekerjaanmu?",
-            "Apa yang paling kamu nikmati dalam rutinitas harianmu?",
-            "Apa yang kamu anggap sebagai kekuatan terbesar dirimu?",
-            "Apa yang paling kamu hargai tentang waktu?",
-            "Apa yang menurutmu penting dalam menjaga hubungan baik dengan orang lain?",
-            "Apa hal yang paling kamu sesali dalam hidup?",
-            "Apa yang akan kamu lakukan jika semua orang mendengarkanmu?",
-            "Apa yang kamu harap bisa kamu lakukan lebih banyak?",
-            "Apa hal yang paling kamu takuti tentang masa depan?",
-            "Apa yang ingin kamu capai dalam hidup sebelum menua?",
-            "Apa yang menurutmu merupakan definisi dari kesuksesan?",
-            "Apa hal yang paling berharga yang kamu pelajari dari orang tua?",
-            "Apa yang paling penting dalam menjaga kebahagiaan?",
-            "Apa yang paling sulit untuk kamu lakukan?",
-            "Apa hal yang ingin kamu ubah tentang dunia ini?",
-            "Apa yang paling membuatmu terinspirasi?",
-            "Apa yang kamu sukai tentang dirimu?",
-            "Apa yang paling kamu nikmati saat liburan?",
-            "Apa hal yang menurutmu paling penting dalam hidup?",
-            "Apa yang akan kamu lakukan jika kamu punya kesempatan untuk memulai semuanya dari awal?",
-            "Apa yang membuatmu merasa diterima?",
-            "Apa yang paling kamu inginkan di masa depan?",
-            "Apa yang menurutmu bisa membuat dunia ini menjadi tempat yang lebih baik?",
-            "Apa yang akan kamu lakukan jika kamu bisa berbicara dengan versi masa depan dirimu?",
-            "Apa yang paling penting dalam membangun kepercayaan?",
-            "Apa yang kamu anggap sebagai tantangan terbesar dalam hidup?",
-            "Apa yang akan kamu lakukan jika semua orang menghargai pendapatmu?",
-            "Apa yang menurutmu adalah kualitas terbaik dalam diri seseorang?",
-            "Apa yang paling kamu hargai dalam hidup ini?",
-            "Apa yang paling membuatmu bangga tentang dirimu?",
-            "Apa yang akan kamu lakukan jika kamu bisa mengubah satu keputusan dalam hidupmu?",
-            "Apa yang menurutmu membuatmu berbeda dari orang lain?",
-            "Apa yang paling kamu sesali tidak pernah kamu coba?",
-            "Apa yang paling kamu ingin lakukan jika kamu tidak takut gagal?",
-            "Apa yang menurutmu menjadi faktor penentu kesuksesan?",
-            "Apa hal yang paling ingin kamu ubah di dunia ini?",
-            "Apa yang akan kamu lakukan jika bisa menjalani kehidupan yang berbeda?",
-            "Apa yang menurutmu bisa membuat hubungan lebih kuat?",
-            "Apa yang akan kamu lakukan jika tidak ada batasan dalam hidupmu?",
-            "Apa hal yang paling membuatmu bersemangat setiap hari?",
-            "Apa yang paling kamu inginkan dalam hidup?",
-            "Apa yang paling kamu hargai tentang teman-temanmu?",
-            "Apa yang menurutmu bisa membuat seseorang sukses?",
-            "Apa yang menurutmu penting dalam menjalani kehidupan yang bermakna?",
-            "Apa yang menurutmu bisa meningkatkan kualitas hidupmu?",
-            "Apa yang menurutmu membuat seseorang berharga?",
-            "Apa yang paling membuatmu merasa dihargai?",
-            "Apa yang paling kamu harapkan dari dirimu sendiri?",
-            "Apa yang paling kamu khawatirkan tentang dunia ini?",
-            "Apa yang ingin kamu capai dalam hidup selain kesuksesan materi?",
-            "Apa yang paling membuatmu bahagia?",
-            "Apa yang menurutmu bisa membuat hidupmu lebih bermakna?"
-        ];
+      // Array pertanyaan
+      const questions = [
+        "Pernahkah kamu melakukan one-night stand?",
+        "Apa fantasi seksual terliar yang pernah kamu miliki?",
+        "Pernahkah kamu melakukan threesome?",
+        "Apa pengalaman seksual paling memalukan yang pernah kamu alami?",
+        "Pernahkah kamu berhubungan seks di tempat umum?",
+        "Berapa usia kamu saat kehilangan keperawanan/keperjakaan?",
+        "Di mana tempat paling menantang yang pernah kamu lakukan hubungan seks?",
+        "Apakah kamu menikmati dirty talk?",
+        "Pernahkah kamu merekam diri sendiri saat berhubungan seks?",
+        "Apa jenis film dewasa favoritmu?",
+        "Pernahkah kamu menggunakan mainan seks?",
+        "Berapa kali orgasme terbanyak yang pernah kamu alami dalam satu hari?",
+        "Pernahkah kamu berpura-pura orgasme?",
+        "Apa posisi seks favoritmu?",
+        "Apakah kamu lebih suka dominan atau submissive?",
+        "Pernahkah kamu berhubungan seks dengan seseorang yang jauh lebih tua atau lebih muda darimu?",
+        "Pernahkah kamu bermimpi seksual tentang seseorang yang seharusnya tidak kamu pikirkan?",
+        "Berapa lama waktu terlama yang pernah kamu lalui tanpa berhubungan seks?",
+        "Pernahkah kamu ketahuan saat sedang berhubungan seks?",
+        "Pernahkah kamu naksir guru atau atasanmu?",
+        "Apa bagian tubuh pasanganmu yang paling kamu sukai?",
+        "Pernahkah kamu pergi ke klub striptease?",
+        "Apa pendapatmu tentang role-playing dalam hubungan seksual?",
+        "Berapa banyak orang yang pernah kamu ajak berhubungan seks dalam satu minggu?",
+        "Pernahkah kamu mengikuti pesta seks?",
+        "Apakah kamu anggota mile-high club? (berhubungan seks di pesawat)",
+        "Pernahkah kamu berhubungan seks di kolam renang atau jacuzzi?",
+        "Pernahkah kamu diborgol atau diikat saat berhubungan seks?",
+        "Apa jenis foreplay favoritmu?",
+        "Pernahkah kamu berhubungan seks dengan pasangan temanmu?",
+        "Pernahkah kamu memberikan atau menerima lap dance?",
+        "Apa pikiran terkotor yang pernah kamu miliki tentang orang asing?",
+        "Pernahkah kamu mengirim foto telanjang diri sendiri?",
+        "Pernahkah kamu selingkuh dari pasanganmu?",
+        "Apakah kamu lebih suka seks santai atau hubungan serius?",
+        "Apa pesan teks paling nakal yang pernah kamu kirim atau terima?",
+        "Pernahkah kamu berhubungan seks dengan lebih dari satu orang dalam sehari?",
+        "Apa hal paling berani secara seksual yang pernah kamu lakukan?",
+        "Pernahkah kamu mencoba anal seks?",
+        "Apa pendapatmu tentang hubungan terbuka?",
+        "Pernahkah kamu menjadi bagian dari sebuah orgy?",
+        "Apa yang paling bisa membuatmu terangsang?",
+        "Apa penyesalan terbesar dalam hal seksual yang pernah kamu miliki?",
+        "Pernahkah kamu masturbasi di tempat umum?",
+        "Pernahkah kamu melakukan sexting?",
+        "Apa hal paling aneh yang bisa membuatmu terangsang?",
+        "Pernahkah kamu melakukan role-play saat berhubungan seks?",
+        "Apa hal paling kinky yang pernah kamu lakukan?",
+        "Pernahkah kamu mengalami pengalaman seksual yang kamu sesali?",
+        "Di mana titik favoritmu untuk dicium?",
+        "Pernahkah kamu naksir rekan kerja?",
+        "Di mana tempat paling tidak biasa yang pernah kamu masturbasi?",
+        "Apakah kamu lebih suka memberi atau menerima oral seks?",
+        "Pernahkah kamu menggunakan makanan dalam foreplay?",
+        "Apa mimpi seksual paling menggairahkan yang pernah kamu alami?",
+        "Pernahkah kamu pergi ke pesta swinger?",
+        "Pernahkah kamu berhubungan seks di dalam mobil?",
+        "Apakah kamu menikmati penggunaan pelumas?",
+        "Pernahkah kamu berlangganan penyedia konten dewasa?",
+        "Siapa pasangan seksual terbaikmu, dan mengapa?",
+        "Pernahkah kamu mencoba BDSM?",
+        "Berapa ronde terbanyak yang pernah kamu lakukan dalam satu malam?",
+        "Pernahkah kamu terangsang oleh seseorang yang tidak terduga?",
+        "Apakah kamu suka melihat pasanganmu memuaskan diri sendiri?",
+        "Pernahkah kamu naksir selebriti?",
+        "Pernahkah kamu menonton film dewasa bersama pasanganmu?",
+        "Pernahkah kamu mempertimbangkan untuk menyewa pekerja seks?",
+        "Apa ketakutan terbesarmu dalam hal seksual?",
+        "Pernahkah kamu berhubungan seks saat mabuk?",
+        "Apa posisi paling canggung yang pernah kamu coba?",
+        "Pernahkah kamu ketahuan sedang masturbasi?",
+        "Jenis lingerie apa yang menurutmu paling menarik?",
+        "Pernahkah kamu memiliki naksir terlarang?",
+        "Apakah kamu lebih suka seks yang berisik atau yang tenang?",
+        "Pernahkah kamu bereksperimen dengan hubungan sesama jenis?",
+        "Apa fantasi paling nakal yang pernah kamu bayangkan?",
+        "Pernahkah kamu naksir saudara dari temanmu?",
+        "Pernahkah kamu berhubungan seks di tempat kerja?",
+        "Pernahkah kamu mencoba bondage?",
+        "Apa pijatan paling sensual yang pernah kamu alami?",
+        "Pernahkah kamu menjilat makanan dari tubuh seseorang?",
+        "Pernahkah kamu melakukan phone sex?",
+        "Apa jenis dirty talk favoritmu?",
+        "Pernahkah kamu berfantasi tentang tetanggamu?",
+        "Pernahkah kamu mengenakan kostum saat berhubungan seks?",
+        "Pada usia berapa kamu mulai bereksperimen secara seksual?",
+        "Pernahkah kamu berhubungan seks di lebih dari satu tempat dalam sehari?",
+        "Berapa lama waktu terlama yang pernah kamu lalui tanpa masturbasi?",
+        "Pernahkah kamu ditutup matanya saat berhubungan seks?",
+        "Apakah kamu lebih suka seks spontan atau yang terencana?",
+        "Apa film dewasa favoritmu?",
+        "Pernahkah kamu bermain strip poker?",
+        "Pernahkah kamu berhubungan seks dengan seseorang yang di luar tipe biasanya?",
+        "Apa tempat paling berisiko yang pernah kamu gunakan untuk berhubungan seks?",
+        "Pernahkah kamu pergi ke pantai telanjang?",
+        "Apakah kamu lebih suka menonton film dewasa amatir atau profesional?",
+        "Pernahkah kamu menjalani hubungan friends-with-benefits?",
+        "Pernahkah kamu mengalami pengalaman seksual yang dimulai dari tantangan?",
+        "Apa objek paling random yang pernah kamu gunakan sebagai mainan seks?",
+        "Jenis musik apa yang bisa membuatmu terangsang?",
+      ];
 
-        // Create board
-        for (let i = 100; i >= 1; i--) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.textContent = i;
-            board.appendChild(cell);
+      // Generate 100 box
+      for (let i = 1; i <= 100; i++) {
+        const box = document.createElement("div");
+        box.className = "box";
+        box.textContent = i;
+        box.setAttribute("data-number", i);
+        document.body.appendChild(box);
+      }
+
+      // Simpan status box yang sudah dibuka
+      const openedBoxes = new Set();
+
+      // Modal elements
+      const modal = document.getElementById("modal");
+      const questionText = document.getElementById("question");
+      const closeBtn = document.querySelector(".close");
+
+      // Event listener untuk box
+      document.querySelectorAll(".box").forEach((box) => {
+        box.addEventListener("click", function () {
+          const boxNumber = parseInt(this.getAttribute("data-number"));
+
+          // Cek apakah box sudah pernah dibuka
+          if (!openedBoxes.has(boxNumber)) {
+            // Tampilkan pertanyaan di modal
+            questionText.textContent =
+              questions[boxNumber - 1] || `Pertanyaan ${boxNumber}`;
+            modal.style.display = "flex";
+
+            // Tandai box sudah dibuka
+            openedBoxes.add(boxNumber);
+            this.classList.add("opened");
+          }
+        });
+      });
+
+      // Tutup modal saat tombol close diklik
+      closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+      });
+
+      // Tutup modal saat klik di luar modal
+      window.addEventListener("click", function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
         }
-
-        // Create players
-        const player1 = document.createElement('div');
-        player1.className = 'player player1';
-        const player2 = document.createElement('div');
-        player2.className = 'player player2';
-        updatePlayerPositions();
-
-        function updatePlayerPositions() {
-            const cells = document.querySelectorAll('.cell');
-            cells[100 - positions[1]].appendChild(player1);
-            cells[100 - positions[2]].appendChild(player2);
-        }
-
-        function rollDice() {
-            const dice = document.getElementById('dice');
-            dice.classList.add('shake');
-            
-            setTimeout(() => {
-                const roll = Math.floor(Math.random() * 6) + 1;
-                dice.textContent = `🎲 ${roll}`;
-                movePlayer(roll);
-                dice.classList.remove('shake');
-            }, 500);
-        }
-
-        function movePlayer(spaces) {
-            const newPosition = Math.min(positions[currentPlayer] + spaces, 100);
-            positions[currentPlayer] = newPosition;
-            updatePlayerPositions();
-            
-            // Show question for the current position
-            showQuestion(newPosition);
-        }
-
-        function showQuestion(position) {
-            // Get a random question (or you could map specific questions to positions)
-            const questionIndex = (position - 1) % questions.length;
-            const question = questions[questionIndex];
-            
-            document.getElementById('currentPlayerNumber').textContent = currentPlayer;
-            document.getElementById('question').textContent = question;
-            questionModal.style.display = 'flex';
-        }
-
-        function closeQuestion() {
-            questionModal.style.display = 'none';
-            
-            // Switch players
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
-            document.getElementById('player1').classList.toggle('current-player');
-            document.getElementById('player2').classList.toggle('current-player');
-            
-            // Check for winner
-            if (positions[currentPlayer === 1 ? 2 : 1] === 100) {
-                showMessage(`Game Over! 🎉`);
-                setTimeout(() => {
-                    if(confirm('Play again?')) {
-                        location.reload();
-                    }
-                }, 1000);
-            }
-        }
-
-        function showMessage(msg) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = msg;
-            setTimeout(() => messageDiv.textContent = '', 3000);
-        }
+      });
     </script>
-</body>
+  </body>
 </html>
