@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, Sayang! ❤️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .heart {
+            animation: heartbeat 1.5s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            animation: fall linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+            overflow-y: auto;
+            z-index: 50;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            z-index: 51;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn {
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-200 to-purple-300">
+    <div id="confetti-container" style="pointer-events: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100;"></div>
+    
+    <main class="min-h-screen flex items-center justify-center p-4">
+        <div class="text-center">
+            <h1 class="text-3xl md:text-6xl font-bold text-pink-600 mb-6">
+                Selamat ulang tahun untuk wanita paling luar biasa dalam hidupku! 
+                <span class="heart inline-block">🎂✨</span>
+            </h1>
+            
+            <div class="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm rounded-lg p-4 md:p-6 shadow-lg mb-8">
+                <img src="sesil.jpg" alt="Sesil Photo" class="w-full rounded-lg mb-4" style="height: 250px; object-fit: cover;">
+                <p class="text-base md:text-xl text-gray-800 mb-4">
+                    Sayang, kamu itu bukan hanya cantik luar dalam, tapi juga luar biasa istimewa. Kamu selalu membawa kebahagiaan di sekitarmu, bahkan saat lagi ngambek sekalipun, tetap saja kamu menggemaskan! 🥰 Aku bersyukur setiap hari bisa mencintai seseorang yang begitu berharga seperti kamu. Semoga hari ini dan setiap harimu dipenuhi dengan cinta, kebahagiaan, dan semua hal indah yang kamu inginkan. Aku selalu ada untukmu, mencintaimu lebih dari apapun. 
+                </p>
+                <p class="text-base md:text-xl text-gray-800">
+                    💕 Happy birthday, Sayang! 💖🎉"
+                </p>
+            </div>
+
+            <button id="surpriseBtn" class="btn bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-full transform transition hover:scale-105 active:scale-95">
+                Ada Sedikit Hadiah! 🎁
+            </button>
+        </div>
+    </main>
+
+    <div id="wishes" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-xl md:text-2xl font-bold text-pink-600 mb-4 text-center">
+                Spesial Voucher Untukmu! 🎁
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                <!-- Voucher 1 -->
+                <div class="bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg p-4 text-white">
+                    <h3 class="font-bold text-lg mb-2">Date Night 🍽️</h3>
+                    <p class="mb-4 text-sm">Makan malam romantis berdua</p>
+                    <div class="text-xl font-bold mb-4">Rp 100.000</div>
+                    <button class="voucher-button btn w-full bg-white text-pink-500 px-4 py-2 rounded-full font-bold hover:bg-pink-100 transition" data-voucher-name="Date Night Voucher" data-gradient-colors='["#ff69b4", "#ff1493"]'>
+                        Download Voucher
+                    </button>
+                </div>
+
+                <!-- Voucher 2 -->
+                <div class="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg p-4 text-white">
+                    <h3 class="font-bold text-lg mb-2">Shopping 🛍️</h3>
+                    <p class="mb-4 text-sm">Belanja apapun yang kamu mau</p>
+                    <div class="text-xl font-bold mb-4">Rp 100.000</div>
+                    <button class="voucher-button btn w-full bg-white text-purple-500 px-4 py-2 rounded-full font-bold hover:bg-purple-100 transition" data-voucher-name="Shopping Voucher" data-gradient-colors='["#800080", "#4b0082"]'>
+                        Download Voucher
+                    </button>
+                </div>
+
+                <!-- Voucher 3 -->
+                <div class="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg p-4 text-white">
+                    <h3 class="font-bold text-lg mb-2">Movie Date 🎬</h3>
+                    <p class="mb-4 text-sm">Nonton film kesukaan kamu</p>
+                    <div class="text-xl font-bold mb-4">Rp 100.000</div>
+                    <button class="voucher-button btn w-full bg-white text-indigo-500 px-4 py-2 rounded-full font-bold hover:bg-indigo-100 transition" data-voucher-name="Movie Voucher" data-gradient-colors='["#4b0082", "#0000ff"]'>
+                        Download Voucher
+                    </button>
+                </div>
+
+                <!-- Voucher 4 -->
+                <div class="bg-gradient-to-r from-blue-500 to-teal-500 rounded-lg p-4 text-white">
+                    <h3 class="font-bold text-lg mb-2">Spa Day 💆‍♀️</h3>
+                    <p class="mb-4 text-sm">Relaksasi dan perawatan</p>
+                    <div class="text-xl font-bold mb-4">Rp 100.000</div>
+                    <button class="voucher-button btn w-full bg-white text-blue-500 px-4 py-2 rounded-full font-bold hover:bg-blue-100 transition" data-voucher-name="Spa Voucher" data-gradient-colors='["#0000ff", "#008080"]'>
+                        Download Voucher
+                    </button>
+                </div>
+
+                <!-- Voucher 5 -->
+                <div class="bg-gradient-to-r from-teal-500 to-green-500 rounded-lg p-4 text-white">
+                    <h3 class="font-bold text-lg mb-2">Wish Voucher ✨</h3>
+                    <p class="mb-4 text-sm">Apapun yang kamu inginkan</p>
+                    <div class="text-xl font-bold mb-4">Rp 100.000</div>
+                    <button class="voucher-button btn w-full bg-white text-teal-500 px-4 py-2 rounded-full font-bold hover:bg-teal-100 transition" data-voucher-name="Wish Voucher" data-gradient-colors='["#008080", "#008000"]'>
+                        Download Voucher
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="closeBtn" class="btn bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="birthdaySong" loop>
+        <source src="ultah.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        // Fungsi untuk membuat konfetti
+        function createConfetti() {
+            const colors = ['#ff69b4', '#ff1493', '#ff69b4', '#ff1493'];
+            const container = document.getElementById('confetti-container');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                container.appendChild(confetti);
+                
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                });
+            }
+        }
+
+        // Fungsi untuk membuat voucher
+        function createVoucherImage(voucherName, gradientColors) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = 1000;
+            canvas.height = 500;
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradientColors.forEach((color, index) => {
+                gradient.addColorStop(index / (gradientColors.length - 1), color);
+            });
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 10;
+            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+            // Text
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 60px Poppins';
+            ctx.fillText(voucherName, canvas.width/2, 150);
+            
+            ctx.font = 'bold 72px Poppins';
+            ctx.fillText('Rp 100.000', canvas.width/2, canvas.height/2);
+
+            const expireDate = new Date();
+            expireDate.setFullYear(expireDate.getFullYear() + 1);
+            const formattedDate = expireDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+            ctx.font = '32px Poppins';
+            ctx.fillText(`Berlaku hingga: ${formattedDate}`, canvas.width/2, canvas.height - 150);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        // Fungsi untuk download voucher
+        function downloadVoucher(voucherName, gradientColors) {
+            const imageUrl = createVoucherImage(voucherName, gradientColors);
+            const a = document.createElement('a');
+            a.href = imageUrl;
+            a.download = `${voucherName.replace(/\s+/g, '_')}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Event listeners
+        document.getElementById('surpriseBtn').addEventListener('click', function() {
+            //document.getElementById('birthdaySong').play();
+            createConfetti();
+            document.getElementById('wishes').classList.remove('hidden');
+        });
+
+        document.addEventListener("click", function() {
+            document.getElementById('birthdaySong').play();
+        });
+
+        // Play birthday song on touch or scroll
+        // document.addEventListener('touchstart', function() {
+        //    document.getElementById('birthdaySong').play();
+        // });
+
+        //document.addEventListener('scroll', function() {
+        //    document.getElementById('birthdaySong').play();
+        //});
+
+        document.getElementById('closeBtn').addEventListener('click', function() {
+            document.getElementById('wishes').classList.add('hidden');
+        });
+
+        // Click outside to close
+        document.getElementById('wishes').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+        // Prevent modal content clicks from closing the modal
+        document.querySelector('.modal-content').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Start confetti animation
+        setInterval(createConfetti, 5000);
+
+        // Event listeners for voucher buttons
+        document.querySelectorAll('.voucher-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const voucherName = this.getAttribute('data-voucher-name');
+                const gradientColors = JSON.parse(this.getAttribute('data-gradient-colors'));
+                downloadVoucher(voucherName, gradientColors);
+            });
+        });
+    </script>
+</body>
+</html>
